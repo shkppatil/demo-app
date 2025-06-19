@@ -1,0 +1,14 @@
+replicaCount: 1
+
+activeVersion: blue  # Change this to "green" to switch traffic
+
+image:
+  repository: shashankppatil/sample-project-nodejs
+  blueTag: blue
+  greenTag: green
+
+service:
+  type: NodePort
+  port: 80
+  nodePort: 30000
+  targetPort: 3000

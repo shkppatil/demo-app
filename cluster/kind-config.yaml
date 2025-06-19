@@ -1,0 +1,10 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - containerPort: 30000
+        hostPort: 9080  # i have taken this port since 8080 is not open on my laptop
+      - containerPort: 30001
+        hostPort: 9081  # i have taken this port since 8080 is not open on my laptop
+  - role: worker
