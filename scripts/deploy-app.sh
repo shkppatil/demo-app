@@ -11,3 +11,11 @@ kind load docker-image node-app:green --name dev-cluster
 kubectl apply -f ../node-app/k8s/blue-deployment.yaml
 kubectl apply -f ../node-app/k8s/green-deployment.yaml
 kubectl apply -f ../node-app/k8s/service.yaml
+
+# Deploy with helm 
+# helm install application ./application -n app-deploy
+
+# incase of any change into manifest file use below command 
+# helm upgrade application ./application -n app-deploy
+
+# helm uninstall application

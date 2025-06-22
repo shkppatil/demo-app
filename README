@@ -1,6 +1,0 @@
-# to setup kind cluster, please run the script which are present in .\script folder with name "create-cluster.sh"
-
-# once the kind cluster is ready make sure it is running with command "kind cluster-info"
-
-# to deploy jenkins into kubernetes kindly run script deploy-jenkins and make sure jenkins pods and service are running after sucessful execution of help repo
-

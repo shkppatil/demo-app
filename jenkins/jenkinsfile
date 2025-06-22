@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(name: 'DEPLOY_ENV', choices: ['blue', 'green'], description: 'Choose environment to deploy: blue or green')
+        choice(name: 'DOCKER_TAG', choices: ['blue', 'green'], description: 'Docker image tag/version to use')
+        choice(name: 'SWITCH_TRAFFIC', choices: ['yes', 'no'], description: 'Switch traffic to the deployed environment?')
+    }
+
+    environment {
+        IMAGE_NAME = "shashankppatil/sample-project-nodejs"
+        IMAGE_TAG = "${params.DOCKER_TAG}"
+        DEPLOY_NS = "${params.DEPLOY_ENV}"
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', credentialsId: 'git-cred', url: 'https://github.com/shkppatil/demo-app.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to Environment') {
+            steps {
+                sh """
+                    helm upgrade --install ${DEPLOY_NS}-app ./nodejs-app/k8s/charts/application \
+                        --namespace ${DEPLOY_NS} \
+                        --create-namespace \
+                        --set image.repository=${IMAGE_NAME} \
+                        --set image.tag=${IMAGE_TAG} \
+                        --set env=${DEPLOY_NS}
+                """
+            }
+        }
+
+        stage('Switch Traffic (Optional)') {
+            when {
+                expression { return params.SWITCH_TRAFFIC == 'yes' }
+            }
+            steps {
+                sh """
+                    echo "Switching traffic to ${DEPLOY_NS}..."
+                    kubectl patch svc app-service -n ${DEPLOY_NS} --type='merge' -p '{"spec": {"selector": {"env": "${DEPLOY_NS}"}}}'
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment to '${DEPLOY_NS}' complete. Traffic switched: ${params.SWITCH_TRAFFIC}"
+        }
+        failure {
+            echo "Deployment failed!"
+        }
+    }
+}
