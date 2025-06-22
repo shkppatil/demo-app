@@ -16,14 +16,18 @@ project-root/
 │   └── kind-config.yaml
 ├── jenkins/
 │   ├── helm-values.yaml
-│   └── job-config/
-│       └── blue-green-pipeline.groovy
+│   ├── jenkisn-secret.yaml
+│   └── jenkinsfile
 ├── nodejs-app/
 │   ├── blue/
 │   ├── green/
-│   └── k8s/
+│   └── k8s/application
 │       ├── charts/
-│       │   └── application/
+│       ├── templates
+│       │   ├── blue-deployment.yaml
+│       │   ├── green-deployment.yaml
+│       │   └── service.yaml  
+│       ├── Charts.yaml  
 │       └── values.yaml
 ├── scripts/
 │   ├── create-cluster.sh
